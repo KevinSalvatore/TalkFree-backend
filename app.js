@@ -3,9 +3,12 @@ const Router = require("koa-router");
 const bodyParser = require("koa-bodyparser");
 const passport = require("koa-passport");
 const { serverPort } = require("./config/index");
+const cors = require("koa-cors");
 
 const app = new Koa();
 const router = new Router();
+
+app.use(cors());
 
 app.use(bodyParser());
 app.use(passport.initialize());

@@ -8,26 +8,31 @@ const router = new Router();
 const secretOrPrivateKey = require("../../../config/index").secretOrPrivateKey;
 
 router.post("/login", async ctx => {
+  console.log("Someone here!")
   let { username, password } = ctx.request.body;
   await queryUser(username).then(
     items => {
       if (!items.length) {
         ctx.status = 400;
         ctx.body = {
+          success: false,
           msg: "No such a person!"
         };
       } else {
         //验证密码
+        console.log("Checking password!")
+
         if (bcrypt.compareSync(password, items[0].password)) {
+          console.log("Yes!")
+
           //OK
-          console.log("OK!");
           //返回Token
           let token = jwt.sign(
             {
               username
             },
             secretOrPrivateKey,
-            { expiresIn: "1h" }
+            { expiresIn: "1d" }
           );
           ctx.status = 200;
           ctx.body = {
@@ -37,13 +42,18 @@ router.post("/login", async ctx => {
         } else {
           ctx.status = 400;
           ctx.body = {
-            password: "Password wrong!"
+            success: false,
+            msg: "Password wrong!"
           };
         }
       }
     },
     err => {
       console.log(err);
+      ctx.status = 500;
+      ctx.body = {
+        msg: "Server wrong!"
+      };
     }
   );
 });
@@ -75,6 +85,22 @@ router.get(
   async ctx => {
     ctx.status = 200;
     ctx.body = ctx.state.user;
+  }
+);
+
+router.get(
+  "/token",
+  passport.authenticate("jwt", { session: false }),
+  async ctx => {
+    if (ctx.state.user) {
+      ctx.status = 200;
+      ctx.body = { success: true };
+    } else {
+      (ctx.status = 400),
+        (ctx.body = {
+          success: false
+        });
+    }
   }
 );
 
