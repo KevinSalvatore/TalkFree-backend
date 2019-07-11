@@ -8,22 +8,22 @@ const router = new Router();
 const secretOrPrivateKey = require("../../../config/index").secretOrPrivateKey;
 
 router.post("/login", async ctx => {
-  console.log("Someone here!")
+  console.log("Someone here!");
   let { username, password } = ctx.request.body;
   await queryUser(username).then(
     items => {
       if (!items.length) {
-        ctx.status = 400;
+        ctx.status = 200;
         ctx.body = {
           success: false,
           msg: "No such a person!"
         };
       } else {
         //验证密码
-        console.log("Checking password!")
+        console.log("Checking password!");
 
         if (bcrypt.compareSync(password, items[0].password)) {
-          console.log("Yes!")
+          console.log("Yes!");
 
           //OK
           //返回Token
@@ -40,7 +40,7 @@ router.post("/login", async ctx => {
             token: "Bearer " + token
           };
         } else {
-          ctx.status = 400;
+          ctx.status = 200;
           ctx.body = {
             success: false,
             msg: "Password wrong!"
@@ -52,6 +52,7 @@ router.post("/login", async ctx => {
       console.log(err);
       ctx.status = 500;
       ctx.body = {
+        success: false,
         msg: "Server wrong!"
       };
     }
@@ -67,16 +68,35 @@ router.post("/regist", async ctx => {
         let salt = bcrypt.genSaltSync(10);
         user.password = bcrypt.hashSync(user.password, salt);
         insertUser(user);
+        let token = jwt.sign(
+          {
+            username: user.username
+          },
+          secretOrPrivateKey,
+          { expiresIn: "1d" }
+        );
+        ctx.status = 200;
+        ctx.body = {
+          success: true,
+          token: "Bearer " + token
+        };
       } else {
-        console.log("Already has!");
+        ctx.status = 200;
+        ctx.body = {
+          success: false,
+          msg: "The username has been used already!"
+        };
       }
     },
     err => {
       console.log(err);
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        msg: "Server wrong!"
+      };
     }
   );
-  ctx.status = 200;
-  ctx.body = "Ok";
 });
 
 router.get(
