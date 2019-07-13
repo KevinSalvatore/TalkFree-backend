@@ -54,11 +54,15 @@ DB.SqliteDB.prototype.queryData = function(sql, callback) {
   });
 };
 
-DB.SqliteDB.prototype.executeSql = function(sql) {
-  DB.db.run(sql, function(err) {
-    if (null != err) {
-      DB.printErrorInfo(err);
-    }
+DB.SqliteDB.prototype.executeSql = function(sql, objects) {
+  DB.db.serialize(function() {
+    var stmt = DB.db.prepare(sql);
+    objects.forEach(object => {
+      stmt.run(object, err => {
+        if (err) console.log(err);
+      });
+    });
+    stmt.finalize();
   });
 };
 

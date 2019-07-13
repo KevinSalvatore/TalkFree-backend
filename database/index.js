@@ -1,19 +1,21 @@
 const path = require("path");
 const SqliteDB = require("./api.js").SqliteDB;
 
-var file = path.join(__dirname, "/data/TalkFree.db");
+var userInfo = path.join(__dirname, "/data/TalkFree.db");
 
-var TalkFreeDB = new SqliteDB(file);
+var TalkFreeDB = new SqliteDB(userInfo);
 
-// var createUserTableSql = `CREATE TABLE if not exists "main"."User" (
-//   "username" TEXT NOT NULL,
-//   "password" TEXT NOT NULL,
-//   "avatar" TEXT,
-//   "gender" integer,
-//   PRIMARY KEY ("username")
-// );`;
+var createUserTableSql = `CREATE TABLE if not exists "main"."User" (
+  "username" TEXT NOT NULL,
+  "password" TEXT NOT NULL,
+  "avatar" TEXT,
+  "gender" integer,
+  "region" TEXT,
+  "slogan" TEXT,
+  PRIMARY KEY ("username")
+);`;
 
-// TalkFreeDB.createTable(createUserTableSql);
+TalkFreeDB.createTable(createUserTableSql);
 
 function insertUser(user) {
   let insertUserSql = `INSERT INTO "main"."User"("username", "password", "avatar", "gender") VALUES (?, ?, ?, ?)`;
@@ -42,7 +44,34 @@ function queryUser(username) {
 //   }
 // });
 
+var createRelationshipTableSql = `CREATE TABLE if not exists "main"."Relationship" (
+  "userA" TEXT NOT NULL,
+  "userB" TEXT NOT NULL,
+  "nickname" TEXT,
+  "tag" TEXT,
+  PRIMARY KEY ("userA", "userB")
+);`;
+
+TalkFreeDB.createTable(createRelationshipTableSql);
+
+function becomeFriend(userA, userB) {
+  let sql = `INSERT INTO "main"."Relationship"("userA", "userB") VALUES (?, ?)`;
+  TalkFreeDB.insertData(sql, [[userA, userB], [userB, userA]]);
+}
+
+// becomeFriend("Kevin", "AJie");
+
+//单向删除好友userA 删除 userB
+function removeRelationship(userA, userB) {
+  let sql = `DELETE FROM "main"."Relationship" WHERE "userA" = ? AND "userB" = ?`;
+  TalkFreeDB.executeSql(sql, [[userA, userB]]);
+}
+
+// removeRelationship("Kevin", "AJie");
+
 module.exports = {
   insertUser,
-  queryUser
+  queryUser,
+  becomeFriend,
+  removeRelationship
 };
