@@ -34,10 +34,21 @@ router.post("/login", async ctx => {
             secretOrPrivateKey,
             { expiresIn: "1d" }
           );
+
+          //返回用户基本信息
+          let userInfo = {
+            username: items[0].username,
+            avatar: items[0].avatar,
+            gender: items[0].gender,
+            region: items[0].region,
+            slogan: items[0].slogan
+          }
+
           ctx.status = 200;
           ctx.body = {
             success: true,
-            token: "Bearer " + token
+            token: "Bearer " + token,
+            userInfo
           };
         } else {
           ctx.status = 200;
