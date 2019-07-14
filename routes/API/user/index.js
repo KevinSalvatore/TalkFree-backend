@@ -42,7 +42,7 @@ router.post("/login", async ctx => {
             gender: items[0].gender,
             region: items[0].region,
             slogan: items[0].slogan
-          }
+          };
 
           ctx.status = 200;
           ctx.body = {
@@ -89,7 +89,10 @@ router.post("/regist", async ctx => {
         ctx.status = 200;
         ctx.body = {
           success: true,
-          token: "Bearer " + token
+          token: "Bearer " + token,
+          userInfo: {
+            username: user.username
+          }
         };
       } else {
         ctx.status = 200;
