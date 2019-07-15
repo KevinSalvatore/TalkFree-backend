@@ -8,7 +8,6 @@ const router = new Router();
 const secretOrPrivateKey = require("../../../config/index").secretOrPrivateKey;
 
 router.post("/login", async ctx => {
-  console.log("Someone here!");
   let { username, password } = ctx.request.body;
   await queryUser(username).then(
     items => {
@@ -134,6 +133,26 @@ router.get(
         (ctx.body = {
           success: false
         });
+    }
+  }
+);
+
+router.post(
+  "/checkoutpwd",
+  passport.authenticate("jwt", { session: false }),
+  async ctx => {
+    let { password } = ctx.request.body;
+    if (bcrypt.compareSync(password, ctx.state.user.password)) {
+      ctx.status = 200;
+      ctx.body = {
+        success: true
+      };
+    } else {
+      ctx.status = 200;
+      ctx.body = {
+        success: false,
+        msg: "Password wrong!"
+      };
     }
   }
 );
